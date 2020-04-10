@@ -19,14 +19,14 @@ class UsuarioController extends Controller
         ]);
 
         if($validacao->fails()){
-            return $validacao->errors();
+            return ['status'=> false,'validacao' =>true,'erros'=>$validacao->errors() ]; 
         }
 
         if(Auth::attempt(['email'=>$data['email'],'password'=>$data['password']])){
             $user = auth()->user();
             $user->token = $user->createToken($user->email)->accessToken;
-            $user->imagem = asset($user->imagem);
-            return $user;
+            //$user->imagem = asset($user->imagem);
+            return ['status'=> true,'usuario'=> $user];
         }else{
             return ['status'=> false];
         }
@@ -43,10 +43,10 @@ class UsuarioController extends Controller
         ]);
 
         if($validacao->fails()){
-            return $validacao->errors();
+            return ['status'=> false,'validacao' =>true,'erros'=>$validacao->errors() ];
         }
 
-        $imagem = 'perfils/padrao.webp';
+        $imagem = 'perfils/padrao.png';
 
         $user = User::create([
             'name' => $data['name'],
@@ -54,17 +54,17 @@ class UsuarioController extends Controller
             'password' => bcrypt($data['password']),
             'imagem' => $imagem,
         ]);
-        $user->imagem = asset($user->imagem);
+        //$user->imagem = asset($user->imagem);
         $user->token = $user->createToken($user->email)->accessToken;
 
-        return $user;
+        return ['status'=> true,'usuario'=> $user];
     }
 
 
     public function perfil(Request $request){
         $user =  $request->user();
         $data = $request->all();
-
+        
         if(isset($data['password'])){
             $validacao = Validator::make($data, [
                 'name' => 'required|string|max:255',
@@ -73,7 +73,7 @@ class UsuarioController extends Controller
             ]);
 
             if($validacao->fails()){
-                return $validacao->errors();
+                return ['status'=> false,'validacao' =>true,'erros'=>$validacao->errors() ];
             }
             $user->name = $data['name'];
             $user->email = $data['email'];
@@ -86,7 +86,7 @@ class UsuarioController extends Controller
             ]);
         
             if($validacao->fails()){
-                return $validacao->errors();
+                return ['status'=> false,'validacao' =>true,'erros'=>$validacao->errors() ];
             }
             $user->name = $data['name'];
             $user->email = $data['email'];
@@ -126,7 +126,7 @@ class UsuarioController extends Controller
             ],['base64image'=>'Imagem inválida']);
 
             if($valiacao->fails()){
-                return $valiacao->errors();
+                return ['status'=> false,'validacao' =>true,'erros'=>$validacao->errors() ];
             }
 
 
@@ -144,8 +144,9 @@ class UsuarioController extends Controller
             }
 
             if($user->imagem){
-                if(file_exists($user->imagem)){
-                    unlink($user->imagem);
+                $imgUser = str_replace(asset('/'),'',$user->imagem);
+                if(file_exists($imgUser)){
+                    unlink($imgUser);
                 }
                 
             }
@@ -160,8 +161,42 @@ class UsuarioController extends Controller
 
         $user->save();
         
-        $user->imagem = asset($user->imagem);
+        //$user->imagem = asset($user->imagem);
         $user->token = $user->createToken($user->email)->accessToken;
-        return $user;
+        return ['status'=> true,'usuario'=> $user];
+    }
+
+    public function amigo(Request $request){
+        $user =  $request->user();
+        $amigo = User::find($request->id);
+        if($amigo){
+            $user->amigos()->toggle($amigo->id);
+            return ['status'=> true,'amigos'=> $user->amigos, 'seguidores' => $amigo->seguidores]; 
+        }else{
+            return ['status'=> false,'erro'=>  "usuário não existe!"]; 
+        }
+    }
+
+    public function list_amigos(Request $request){
+        $user = $request->user();
+        if($user){
+            return ['status'=> true,'amigos'=> $user->amigos, 'seguidores' => $user->seguidores];
+        }else{
+            return ['status'=> false,'erro'=> 'Esse usuário não existe'];
+        }
+
+    }
+
+    public function list_amigos_pagina($id,Request $request){
+        $userLogado = $request->user();
+        $user = User::find($id);
+
+        if($user){
+            return ['status'=> true,'amigos'=> $user->amigos,'amigosLogado' => $userLogado->amigos, 'seguidores' => $user->seguidores];
+            
+        }else{
+            return ['status'=> false,'erro'=> 'Esse usuário não existe'];
+        }
+
     }
 }
