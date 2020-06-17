@@ -32,6 +32,8 @@ Route::middleware('auth:api')->put('/perfil','UsuarioController@perfil');
 Route::middleware('auth:api')->post('/usuario/amigo','UsuarioController@amigo');
 Route::middleware('auth:api')->get('/usuario/listamigos','UsuarioController@list_amigos');
 Route::middleware('auth:api')->get('/usuario/listamigoslogado/{id}','UsuarioController@list_amigos_pagina');
+Route::middleware('auth:api')->get('/usuario/listgeralamigos/{id}','UsuarioController@list_geral_amigos');
+
 
 
 
@@ -48,14 +50,30 @@ Route::middleware('auth:api')->get('/conteudo/page/lista/{id}','ConteudoControll
 
 
 Route::get("/teste",function(){ 
-    $user = User::find(1);
-    //$user2 = User::find(2);
+    $user = User::find(1)->get();
+    foreach ($user as $key => $value) {
+        $value['teste'] = true;
+
+    }
+    dd($user);
+    /*$id_amigos = [];
+    foreach ($user->amigos as $key => $value) {
+        array_push($id_amigos,$value->id);
+    }
+    array_push($id_amigos,$user->id);
+    //dd($id_amigos);
+    $users = User::whereNotIn('id',$id_amigos)->get();
+
+    dd($users);*/
+    /*$user = User::find(1);
+    $user2 = User::find(2);
+    $user->amigos()->toggle($user2->id);*/
 
     //$user = $request->user();
-    $amigos = $user->amigos()->pluck('amigo_id');
+    /*$amigos = $user->amigos()->pluck('amigo_id');
     $amigos->push($user->id);
     dd($amigos);
-    $conteudos = Conteudo::whereIn('user_id',$amigos)->with('user')->orderBy('data','DESC')->paginate(5);
+    $conteudos = Conteudo::whereIn('user_id',$amigos)->with('user')->orderBy('data','DESC')->paginate(5);*/
  
 
     /*$conteudo = Conteudo::all();

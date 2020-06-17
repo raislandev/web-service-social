@@ -199,4 +199,32 @@ class UsuarioController extends Controller
         }
 
     }
+
+    public function list_geral_amigos($id,Request $request){
+        $user = User::find($id);
+        $id_amigos = [];
+        foreach ($user->amigos as $key => $value) {
+            array_push($id_amigos,$value->id);
+        }
+        array_push($id_amigos,$user->id);
+        $users = User::whereNotIn('id',$id_amigos)->paginate(7);
+
+        foreach ($users as $key => $value) {
+            foreach ($user->seguidores as $key => $value2) {
+                if($value->id == $value2->id){
+                    $value['seguidor'] = true;
+                }else{
+                    $value['seguidor'] = false;
+                }
+            }
+        }
+
+        if($user){
+            return ['status'=> true,'sugestao_amigos'=> $users];
+            
+        }else{
+            return ['status'=> false,'erro'=> 'Esse usuário não existe'];
+        }
+
+    }
 }
