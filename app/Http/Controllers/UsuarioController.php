@@ -46,7 +46,7 @@ class UsuarioController extends Controller
             return ['status'=> false,'validacao' =>true,'erros'=>$validacao->errors() ];
         }
 
-        $imagem = 'perfils/padrao.png';
+        $imagem = 'perfils/padrao.webp';
 
         $user = User::create([
             'name' => $data['name'],
